@@ -1,0 +1,636 @@
+[nz_trip_v3.html](https://github.com/user-attachments/files/26563975/nz_trip_v3.html)
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>紐西蘭南島 賞紅葉之旅</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#f5f3ee;--bg2:#fff;--bg3:#eceae3;--bg4:#f0ede6;--border:#dedad0;--border2:#ccc8bc;--text:#2a2a1e;--text2:#6b6a5e;--text3:#a0a090;--green:#4a7c59;--green2:#3a6347;--gl:#e8f0e9;--r:14px;--r2:10px}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+.top-header{padding:14px 18px 10px;background:var(--bg);flex-shrink:0;position:relative}
+.trip-title{font-size:19px;font-weight:700}
+.trip-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.sync-dot{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);position:absolute;top:16px;right:16px}
+.sync-dot::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block}
+.wcard{margin:0 14px 10px;background:var(--bg2);border-radius:var(--r);padding:12px 14px;border:1px solid var(--border)}
+.wtop{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.wicon{font-size:28px}
+.wtitle{font-size:15px;font-weight:700}
+.wdate{font-size:12px;color:var(--green);margin-top:2px;font-weight:500}
+.wtemp{margin-left:auto;font-size:13px;font-weight:600;color:var(--green);white-space:nowrap}
+.wtags{display:flex;gap:6px;flex-wrap:wrap}
+.wtag{background:var(--bg4);border-radius:999px;padding:3px 9px;font-size:11px;color:var(--text2)}
+.day-tabs-wrap{padding:0 14px 10px;flex-shrink:0}
+.day-tabs{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.day-tabs::-webkit-scrollbar{display:none}
+.day-tab{flex-shrink:0;background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:7px 12px;cursor:pointer;transition:all .2s;text-align:center;min-width:54px}
+.day-tab.active{background:var(--green);border-color:var(--green);color:#fff}
+.day-tab .dn{font-size:12px;font-weight:700;display:block}
+.day-tab .dd{font-size:10px;display:block;margin-top:1px;opacity:.75}
+.day-tab:not(.active) .dn{color:var(--text)}
+.day-tab:not(.active) .dd{color:var(--text3)}
+.lock-bar{margin:0 14px 10px;background:var(--bg2);border:1.5px dashed var(--border2);border-radius:var(--r2);padding:9px 12px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text2);flex-shrink:0}
+.lock-bar.adm{background:var(--gl);border:1.5px solid var(--green);color:var(--green2)}
+.btn-unlock{background:var(--green);color:#fff;border:none;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-unlock.locked{background:var(--bg3);color:var(--text2)}
+.scroll-content{flex:1;overflow-y:auto;padding:0 14px 14px}
+.timeline{position:relative;padding-left:22px}
+.timeline::before{content:'';position:absolute;left:5px;top:8px;bottom:8px;width:1.5px;background:var(--border2);border-radius:1px}
+.tl-item{position:relative;margin-bottom:8px}
+.tl-bullet{position:absolute;left:-22px;top:15px;width:12px;height:12px;border-radius:50%;z-index:2;border:2px solid var(--bg2);box-shadow:0 0 0 1.5px currentColor}
+.tl-card{background:var(--bg2);border-radius:var(--r2);border:1px solid var(--border);overflow:hidden}
+.tl-card-header{display:flex;align-items:center;padding:11px 12px;cursor:pointer;gap:10px}
+.tl-time{font-size:13px;font-weight:600;min-width:44px;flex-shrink:0}
+.tl-dot-i{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.tl-name{font-size:14px;font-weight:500;line-height:1.3}
+.tl-dur{font-size:10px;color:var(--text3);flex-shrink:0;white-space:nowrap}
+.tl-arr{color:var(--text3);font-size:11px;transition:transform .2s;flex-shrink:0}
+.tl-card.expanded .tl-arr{transform:rotate(180deg)}
+.tl-body{display:none;padding:0 12px 12px;border-top:1px solid var(--bg3)}
+.tl-card.expanded .tl-body{display:block}
+.tl-note{font-size:13px;color:var(--text2);line-height:1.7;padding-top:10px;padding-bottom:6px}
+.gmaps-link{display:flex;align-items:center;justify-content:space-between;background:var(--bg4);border-radius:var(--r2);padding:9px 11px;margin-top:6px}
+.gmaps-left{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)}
+.gmaps-btn{background:var(--green);color:#fff;border:none;border-radius:999px;padding:5px 12px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0}
+.tc{display:inline-flex;align-items:center;gap:4px;background:var(--gl);border-radius:999px;padding:3px 9px;font-size:11px;color:var(--green2);margin-top:6px}
+.sc{display:inline-flex;align-items:center;gap:4px;background:#fef9ec;border:1px solid #f0d98a;border-radius:999px;padding:3px 9px;font-size:11px;color:#92700a;margin-top:6px;margin-left:4px}
+.adm-acts{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--bg3)}
+.add-stop-row{display:flex;align-items:center;gap:10px;padding:10px 0;cursor:pointer;opacity:.55;transition:opacity .2s}
+.add-stop-row:hover{opacity:1}
+.add-stop-icon{width:36px;height:36px;border-radius:50%;border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text3)}
+.map-page{display:none;flex:1;flex-direction:column}
+.map-page.active{display:flex}
+#map{flex:1;min-height:0}
+.map-info{padding:10px 14px;background:var(--bg2);border-top:1px solid var(--border);font-size:12px;color:var(--text2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.bottom-tabs{display:flex;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0}
+.bottom-tab{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0 6px;cursor:pointer;gap:3px}
+.bottom-tab .ti{font-size:19px}
+.bottom-tab .tl{font-size:10px;color:var(--text3);font-weight:500}
+.bottom-tab.active .tl{color:var(--green)}
+.itin-page{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.itin-page.hidden{display:none}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--bg2);border-radius:22px 22px 0 0;padding:20px 16px 28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal-handle{width:34px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:var(--bg3);border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;color:var(--text2);display:flex;align-items:center;justify-content:center}
+.fg{margin-bottom:12px}
+.fl{font-size:11px;color:var(--text2);font-weight:500;margin-bottom:5px;display:block}
+.fi,.fs,.ft{width:100%;background:var(--bg4);border:1.5px solid var(--border);border-radius:var(--r2);padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.fi:focus,.fs:focus,.ft:focus{border-color:var(--green)}
+.ft{min-height:72px;resize:vertical;line-height:1.6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sl{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.btn-p{background:var(--green);color:#fff;border:none;border-radius:var(--r2);padding:12px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;width:100%;margin-top:4px}
+.btn-d{background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+.btn-g{background:var(--bg3);color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+.dot-picker{display:flex;gap:7px;flex-wrap:wrap}
+.dot-opt{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:all .2s}
+.dot-opt.selected{border-color:var(--text);transform:scale(1.15)}
+.login-page{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px}
+.login-page.hidden{display:none}
+.login-box{background:var(--bg2);border-radius:var(--r);padding:28px 22px;width:100%;max-width:320px;text-align:center;border:1px solid var(--border)}
+.pw-input{width:100%;background:var(--bg4);border:1.5px solid var(--border);border-radius:var(--r2);padding:12px;text-align:center;font-size:16px;letter-spacing:3px;outline:none;font-family:inherit;transition:border-color .2s}
+.pw-input:focus{border-color:var(--green)}
+.btn-login{background:var(--green);color:#fff;border:none;border-radius:var(--r2);padding:12px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;width:100%;margin-top:10px;margin-bottom:8px}
+.btn-visitor{background:transparent;color:var(--text2);border:1.5px solid var(--border);border-radius:var(--r2);padding:11px;font-size:13px;cursor:pointer;font-family:inherit;width:100%}
+.pw-err{font-size:12px;color:#dc2626;margin-top:6px;display:none}
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(30,30,20,.9);color:#fff;border-radius:10px;padding:10px 18px;font-size:13px;z-index:500;transition:transform .3s;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.add-day-tab{flex-shrink:0;background:transparent;border:1.5px dashed var(--border2);border-radius:12px;padding:7px 12px;cursor:pointer;color:var(--green);font-size:12px;font-weight:500;display:flex;align-items:center;gap:3px;white-space:nowrap;font-family:inherit}
+.empty-msg{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-msg .ei{font-size:36px;margin-bottom:10px}
+.empty-msg .et{font-size:14px;color:var(--text2);font-weight:500;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="login-page" id="lp">
+  <div class="login-box">
+    <div style="font-size:40px;margin-bottom:10px">🍂</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px">紐西蘭南島</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6">賞紅葉之旅<br>管理者請輸入密碼，訪客可直接瀏覽</div>
+    <input class="pw-input" id="pwi" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')chkPw()">
+    <div class="pw-err" id="pwe">密碼錯誤</div>
+    <button class="btn-login" onclick="chkPw()">管理者登入</button>
+    <button class="btn-visitor" onclick="enterV()">訪客瀏覽 →</button>
+  </div>
+</div>
+<div class="top-header">
+  <div class="trip-title">紐西蘭南島 賞紅葉之旅</div>
+  <div class="trip-sub">15 天・南島全覽</div>
+  <div class="sync-dot">已同步</div>
+</div>
+<div class="itin-page" id="pg-itin">
+  <div class="wcard">
+    <div class="wtop">
+      <div class="wicon" id="wi">🍂</div>
+      <div style="flex:1;min-width:0">
+        <div class="wtitle" id="wt">Day 1</div>
+        <div class="wdate" id="wd"></div>
+      </div>
+      <div class="wtemp" id="wtp"></div>
+    </div>
+    <div class="wtags" id="wtg"></div>
+  </div>
+  <div class="day-tabs-wrap"><div class="day-tabs" id="dtabs"></div></div>
+  <div class="lock-bar" id="lb">
+    <span id="ll">🔒 瀏覽模式</span>
+    <button class="btn-unlock" id="ub" onclick="toggleAdm()">🔒 解鎖編輯</button>
+  </div>
+  <div class="scroll-content">
+    <div class="timeline" id="tl"></div>
+    <div class="add-stop-row hidden" id="asr" onclick="openAddStop()">
+      <div class="add-stop-icon">＋</div>
+      <span style="font-size:13px;color:var(--text2)">新增地點</span>
+    </div>
+  </div>
+</div>
+<div class="map-page" id="pg-map">
+  <div id="map"></div>
+  <div class="map-info"><span id="mdl">地圖</span><span id="mpl" style="color:var(--text3)"></span></div>
+</div>
+<div class="bottom-tabs">
+  <div class="bottom-tab active" id="tab-itin" onclick="swTab('itin')"><span class="ti">📅</span><span class="tl">行程</span></div>
+  <div class="bottom-tab" id="tab-map" onclick="swTab('map')"><span class="ti">🗺️</span><span class="tl">地圖</span></div>
+</div>
+
+<!-- STOP MODAL -->
+<div class="modal-overlay hidden" id="ms">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title"><span id="mst">新增地點</span><button class="modal-close" onclick="closeM('ms')">✕</button></div>
+    <div class="form-row">
+      <div class="fg"><label class="fl">時間</label><input class="fi" id="st" type="time" value="09:00"></div>
+      <div class="fg"><label class="fl">停留時間</label><input class="fi" id="ss" placeholder="01時00分"></div>
+    </div>
+    <div class="fg"><label class="fl">地點名稱</label><input class="fi" id="sn" placeholder="例：Lake Tekapo"></div>
+    <div class="fg">
+      <label class="fl">顏色標記</label>
+      <div class="dot-picker" id="dp">
+        <div class="dot-opt selected" style="background:#4a7c59" data-c="#4a7c59" onclick="selC(this)"></div>
+        <div class="dot-opt" style="background:#e07b54" data-c="#e07b54" onclick="selC(this)"></div>
+        <div class="dot-opt" style="background:#d4a017" data-c="#d4a017" onclick="selC(this)"></div>
+        <div class="dot-opt" style="background:#5b8dd9" data-c="#5b8dd9" onclick="selC(this)"></div>
+        <div class="dot-opt" style="background:#9b6bc7" data-c="#9b6bc7" onclick="selC(this)"></div>
+        <div class="dot-opt" style="background:#c75b5b" data-c="#c75b5b" onclick="selC(this)"></div>
+        <div class="dot-opt" style="background:#7a9e5a" data-c="#7a9e5a" onclick="selC(this)"></div>
+        <div class="dot-opt" style="background:#888" data-c="#888" onclick="selC(this)"></div>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">備注說明</label><textarea class="ft" id="sno" placeholder="行程說明、注意事項…"></textarea></div>
+    <div class="fg"><label class="fl">住宿標記（若當晚住這）</label><input class="fi" id="ssn" placeholder="居住兩日（留空略過）"></div>
+    <div class="fg"><label class="fl">交通方式</label>
+      <select class="fs" id="str">
+        <option value="">— 無 —</option>
+        <option value="🚗 自駕">🚗 自駕</option>
+        <option value="🚌 巴士">🚌 巴士</option>
+        <option value="✈️ 飛機">✈️ 飛機</option>
+        <option value="🚢 渡輪">🚢 渡輪</option>
+        <option value="🚠 纜車">🚠 纜車</option>
+        <option value="🚶 步行">🚶 步行</option>
+        <option value="🚁 直升機">🚁 直升機</option>
+      </select>
+    </div>
+    <div class="sl">地圖座標（選填）</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6">💡 Google Maps 右鍵點地點 → 複製座標</div>
+    <div class="form-row">
+      <div class="fg"><label class="fl">緯度 Lat</label><input class="fi" id="slat" type="number" step="any" placeholder="-43.73"></div>
+      <div class="fg"><label class="fl">經度 Lng</label><input class="fi" id="slng" type="number" step="any" placeholder="170.10"></div>
+    </div>
+    <div class="fg"><label class="fl">Google 地圖搜尋名稱</label><input class="fi" id="sgm" placeholder="例：Lake Tekapo New Zealand"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-p" style="margin:0" onclick="saveStop()">儲存</button>
+      <button id="dsb" class="btn-d" style="display:none" onclick="delStop()">刪除</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAY MODAL -->
+<div class="modal-overlay hidden" id="md">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title"><span id="mdt">新增天數</span><button class="modal-close" onclick="closeM('md')">✕</button></div>
+    <div class="fg"><label class="fl">天數標題</label><input class="fi" id="dt" placeholder="例：基督城 → 蒂卡波"></div>
+    <div class="fg"><label class="fl">日期（選填，不填只顯示天數）</label><input class="fi" id="dd" type="date"></div>
+    <div class="sl">天氣（選填）</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <button class="btn-g" onclick="setWI('☀️')">☀️</button>
+      <button class="btn-g" onclick="setWI('⛅')">⛅</button>
+      <button class="btn-g" onclick="setWI('🌧️')">🌧️</button>
+      <button class="btn-g" onclick="setWI('🌨️')">🌨️</button>
+      <button class="btn-g" onclick="setWI('🍂')">🍂</button>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label class="fl">天氣圖示</label><input class="fi" id="dwi" placeholder="🍂" style="text-align:center;font-size:18px"></div>
+      <div class="fg"><label class="fl">溫度</label><input class="fi" id="dwt" placeholder="15° / 6°"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label class="fl">天氣說明</label><input class="fi" id="dwd" placeholder="晴時多雲"></div>
+      <div class="fg"><label class="fl">日落時間</label><input class="fi" id="dws" placeholder="19:30"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-p" style="margin:0" onclick="saveDay()">儲存</button>
+      <button id="ddb" class="btn-d" style="display:none" onclick="delDay()">刪除這天</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SK='nz_rl_v1', PW='yilin0727';
+let isAdm=false, dayIdx=0, editSI=null, editDI=null, selColor='#4a7c59';
+let mapObj=null, mapMk=[], mapRt=null, activeTab='itin';
+
+const DAYS=[
+  {id:'d1',title:'基督城落地',date:'2026-04-04',weather:{icon:'🍂',desc:'秋高氣爽',temp:'16° / 8°',sunset:'19:30'},stops:[
+    {id:'s101',time:'17:00',name:'基督城國際機場',enName:'Christchurch International Airport',color:'#5b8dd9',stay:'01時00分',stayNote:'',transport:'✈️ 飛機',note:'落地、入境、提取行李、前往租車公司取車。4月份紐西蘭正值秋季，氣溫涼爽，建議備好薄外套。',gmaps:'Christchurch Airport New Zealand',lat:-43.4894,lng:172.5322},
+    {id:'s102',time:'18:15',name:'基督城科茨沃爾德哈特蘭德酒店',enName:'Scenic Hotel Cotswold',color:'#9b6bc7',stay:'住宿',stayNote:'住宿',transport:'🚗 自駕',note:'辦理入住。附近有 Merivale 商圈可以晚餐選擇。',gmaps:'Cotswold Hotel Christchurch',lat:-43.5142,lng:172.6052}
+  ]},
+  {id:'d2',title:'西海岸公路・前往福克斯冰川',date:'2026-04-05',weather:{icon:'🍂',desc:'晴時多雲',temp:'15° / 7°',sunset:'19:25'},stops:[
+    {id:'s201',time:'10:15',name:'城堡山巨石群',enName:'Castle Hill Rocks',color:'#4a7c59',stay:'00時35分',stayNote:'',transport:'🚗 自駕',note:'奇特的石灰岩巨石群，電影《納尼亞傳奇》取景地之一。可以爬上巨石四望，景色壯觀。',gmaps:'Castle Hill Rocks New Zealand',lat:-43.203,lng:171.565},
+    {id:'s202',time:'10:57',name:'溶洞溪流自然保護區',enName:'Cave Stream Scenic Reserve',color:'#4a7c59',stay:'00時40分',stayNote:'',transport:'🚗 自駕',note:'溶洞溪流步道，可以涉水穿越洞穴，也可以只在外面參觀。',gmaps:'Cave Stream Scenic Reserve',lat:-43.218,lng:171.582},
+    {id:'s203',time:'11:49',name:'皮爾森湖（莫阿納盧阿湖）',enName:'Lake Pearson (Moana Rua)',color:'#5b8dd9',stay:'00時30分',stayNote:'',transport:'🚗 自駕',note:'秋季湖邊倒影美不勝收，是拍攝紅葉倒影的絕佳地點。',gmaps:'Lake Pearson New Zealand',lat:-43.095,lng:171.744},
+    {id:'s204',time:'12:29',name:'懷馬卡里里河觀景台',enName:'Waimakariri River Lookout',color:'#4a7c59',stay:'00時20分',stayNote:'',transport:'🚗 自駕',note:'壯闊的辮狀河流景觀，搭配山脈背景，是西海岸公路沿途亮點。',gmaps:"Waimakariri River Arthur's Pass",lat:-42.956,lng:171.562},
+    {id:'s205',time:'13:14',name:'奧蒂拉高架橋觀景台',enName:'Otira Viaduct Lookout',color:'#d4a017',stay:'00時40分',stayNote:'',transport:'🚗 自駕',note:'亞瑟隘口公路上的著名高架橋景觀，俯瞰深谷，壯觀壯麗。',gmaps:'Otira Viaduct New Zealand',lat:-42.808,lng:171.549},
+  ]},
+  {id:'d3',title:'法蘭茲約瑟夫冰川・Lake Matheson',date:'2026-04-06',weather:{icon:'⛅',desc:'多雲偶晴',temp:'14° / 6°',sunset:'19:20'},stops:[
+    {id:'s301',time:'09:30',name:'法蘭茲約瑟夫冰川步道',enName:'Franz Josef Glacier Walk',color:'#4a7c59',stay:'02時40分',stayNote:'',transport:'🚗 自駕',note:'徒步前往法蘭茲約瑟夫冰川末端，可近距離感受冰川震撼。注意安全標示勿越界。',gmaps:'Franz Josef Glacier Walk',lat:-43.386,lng:170.183},
+    {id:'s302',time:'12:19',name:'海岸餐廳酒吧',enName:'The Landing Restaurant & Bar',color:'#e07b54',stay:'01時30分',stayNote:'',transport:'🚗 自駕',note:'西海岸知名餐廳，新鮮海鮮料理。推薦藍鱈魚和青口貝。',gmaps:'The Landing Restaurant Franz Josef',lat:-43.388,lng:170.184},
+    {id:'s303',time:'14:20',name:'馬瑟森湖',enName:'Lake Matheson',color:'#5b8dd9',stay:'01時30分',stayNote:'',transport:'🚗 自駕',note:'紐西蘭最著名的倒影湖！清晨或傍晚最美，庫克山完美倒映。秋色加倒影，絕景。',gmaps:'Lake Matheson Fox Glacier',lat:-43.452,lng:170.025},
+    {id:'s304',time:'15:56',name:'福克斯冰川谷地觀景台',enName:'Te kopikopiko o te waka Peak View',color:'#4a7c59',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'福克斯冰川河谷觀景台，可俯瞰整個冰川河谷。',gmaps:'Fox Glacier Valley View',lat:-43.468,lng:170.022}
+  ]},
+  {id:'d4',title:'哈斯特隘口・前往瓦納卡',date:'2026-04-07',weather:{icon:'🍂',desc:'秋天晴朗',temp:'16° / 7°',sunset:'19:15'},stops:[
+    {id:'s401',time:'10:15',name:'武士角觀景台',color:'#4a7c59',stay:'00時30分',stayNote:'',transport:'🚗 自駕',note:'太斯曼海與南阿爾卑斯山的壯麗交匯點，4月份秋景配上海浪相當震撼。',gmaps:'Knights Point Lookout New Zealand',lat:-43.811,lng:169.163},
+    {id:'s402',time:'11:28',name:'咆哮比利瀑布步道',enName:'Roaring Billy Falls Track',color:'#7a9e5a',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'哈斯特地區短健行步道，瀑布清晰可見，雨林氛圍濃厚。',gmaps:'Roaring Billy Falls Haast',lat:-43.913,lng:169.268},
+    {id:'s403',time:'12:38',name:'哈斯特河觀景台',enName:'Haast River Viewpoint',color:'#4a7c59',stay:'00時30分',stayNote:'',transport:'🚗 自駕',note:'哈斯特河觀景台，廣闊的辮狀河流景觀。',gmaps:'Haast River Viewpoint',lat:-44.01,lng:169.41},
+    {id:'s404',time:'13:17',name:'雷鳴溪瀑布',enName:'Thunder Creek Falls',color:'#5b8dd9',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'哈斯特隘口最著名瀑布，從懸崖直瀉而下，氣勢磅礡。步道短只需5分鐘即可到達最佳觀賞點。',gmaps:'Thunder Creek Falls Haast Pass',lat:-44.139,lng:169.415},
+    {id:'s405',time:'14:19',name:'哈斯特之門',enName:'Gates of Haast',color:'#4a7c59',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'哈斯特之門，峽谷急流湍急，是哈斯特隘口的標誌性景觀。',gmaps:'Gates of Haast Bridge',lat:-44.115,lng:169.378},
+    {id:'s406',time:'15:24',name:'扇尾瀑布',enName:'Fantail Falls',color:'#7a9e5a',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'扇尾瀑布，水流寬廣如扇，秋色環繞，非常上鏡。',gmaps:'Fantail Falls Haast Pass',lat:-44.105,lng:169.347},
+  ]},
+  {id:'d5',title:'瓦納卡・紅葉湖景',date:'2026-04-08',weather:{icon:'🍂',desc:'秋高氣爽',temp:'15° / 5°',sunset:'19:10'},stops:[
+    {id:'s501',time:'09:20',name:'瓦納卡湖觀景台',enName:'Lake Wānaka Lookout',color:'#5b8dd9',stay:'00時40分',stayNote:'',transport:'🚶 步行',note:'瓦納卡湖景觀台，秋天金黃色樹葉配藍湖，是絕美的秋色景觀。',gmaps:'Lake Wanaka Lookout',lat:-44.696,lng:169.133},
+    {id:'s502',time:'10:04',name:'霍基亞湖觀景台',enName:'Lake Hāwea Lookout',color:'#5b8dd9',stay:'00時40分',stayNote:'',transport:'🚗 自駕',note:'霍基亞湖觀景台，湖水清澈碧藍，山脈倒影，秋色環繞。',gmaps:'Lake Hawea Lookout',lat:-44.582,lng:169.275},
+    {id:'s503',time:'10:51',name:'霍基亞湖觀景台（第二處）',enName:'Lake Hawea Lookout',color:'#5b8dd9',stay:'00時30分',stayNote:'',transport:'🚗 自駕',note:'另一個角度的霍基亞湖觀景，可拍到不同構圖。',gmaps:'Lake Hawea New Zealand',lat:-44.600,lng:169.280},
+    {id:'s504',time:'11:42',name:'瓦納卡薰衣草農場',enName:'Wānaka Lavender Farm',color:'#9b6bc7',stay:'02時00分',stayNote:'',transport:'🚗 自駕',note:'瓦納卡薰衣草農場，農場景色優美，可品嘗薰衣草製品。',gmaps:'Wanaka Lavender Farm',lat:-44.67,lng:169.19},
+    {id:'s505',time:'13:48',name:'國家交通及玩具博物館',enName:'National Transport & Toy Museum',color:'#d4a017',stay:'01時30分',stayNote:'',transport:'🚗 自駕',note:'超有趣的交通工具和玩具博物館，老飛機、老車一應俱全。',gmaps:'National Transport and Toy Museum Wanaka',lat:-44.702,lng:169.155},
+    {id:'s506',time:'15:27',name:'鐵山步道',enName:'Mount Iron Track',color:'#4a7c59',stay:'01時30分',stayNote:'',transport:'🚶 步行',note:'瓦納卡標誌性短健行，從頂峰可360度俯瞰瓦納卡湖和霍基亞湖，秋色一覽無遺。',gmaps:'Mount Iron Wanaka',lat:-44.688,lng:169.165},
+    {id:'s507',time:'17:06',name:'燈塔角',enName:'Beacon Point',color:'#7a9e5a',stay:'00時40分',stayNote:'',transport:'🚶 步行',note:'湖邊秘境觀景點，夕陽配秋色，極美。',gmaps:'Beacon Point Wanaka',lat:-44.707,lng:169.115},
+    {id:'s508',time:'17:59',name:'瓦納卡孤樹湖岸步道',enName:'Wānaka Tree',color:'#d4a017',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'紐西蘭最著名的「孤獨樹」，矗立湖中已100多年。黃昏光線最美，必拍！注意：現已設圍欄保護。',gmaps:'Wanaka Tree New Zealand',lat:-44.712,lng:169.141}
+  ]},
+  {id:'d6',title:'卡德羅納・箭鎮・皇后鎮',date:'2026-04-09',weather:{icon:'🍂',desc:'秋天晴朗',temp:'14° / 4°',sunset:'19:05'},stops:[
+    {id:'s601',time:'09:45',name:'卡德羅納胸罩圍欄',color:'#e07b54',stay:'00時10分',stayNote:'',transport:'🚗 自駕',note:'著名公路奇景！路邊圍欄掛滿了來自世界各地旅人留下的胸罩，非常獨特有趣。',gmaps:'Cardrona Bra Fence New Zealand',lat:-44.862,lng:168.957},
+    {id:'s602',time:'09:58',name:'卡德羅納自治領廣場',enName:'Cardrona Domain',color:'#4a7c59',stay:'00時25分',stayNote:'',transport:'🚗 自駕',note:'卡德羅納歷史小鎮廣場，淘金時代的歷史遺跡，秋天楊樹金黃燦爛。',gmaps:'Cardrona Domain New Zealand',lat:-44.873,lng:168.953},
+    {id:'s603',time:'10:38',name:'皇冠山脈頂點',enName:'Crown Range Summit',color:'#4a7c59',stay:'00時20分',stayNote:'',transport:'🚗 自駕',note:'皇冠山脈頂點，紐西蘭最高公路！可俯瞰整個皇后鎮盆地，秋色盡收眼底。',gmaps:'Crown Range Summit New Zealand',lat:-44.913,lng:168.866},
+    {id:'s604',time:'11:07',name:'箭河交匯觀景台',enName:'Arrow Junction Lookout',color:'#4a7c59',stay:'00時20分',stayNote:'',transport:'🚗 自駕',note:'前往箭鎮途中的觀景台，秋天山谷一片金紅。',gmaps:'Arrow Junction Queenstown',lat:-44.987,lng:168.793},
+    {id:'s605',time:'11:39',name:'箭鎮麵包坊',enName:'Arrowtown Bakery',color:'#e07b54',stay:'01時00分',stayNote:'',transport:'🚗 自駕',note:'箭鎮人氣麵包店，肉派和三明治非常推薦，是當地人最愛的早午餐點。',gmaps:'Arrowtown Bakery',lat:-44.938,lng:168.829},
+    {id:'s606',time:'12:42',name:'箭鎮郵局',enName:'NZ Post Centre Arrowtown',color:'#888',stay:'00時15分',stayNote:'',transport:'🚶 步行',note:'箭鎮郵局，可以在這裡寄明信片給台灣的朋友！',gmaps:'Arrowtown Post Office',lat:-44.938,lng:168.831},
+    {id:'s607',time:'12:57',name:'湖區博物館',color:'#d4a017',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'了解當地淘金熱歷史和毛利文化，箭鎮必訪景點。',gmaps:'Lakes District Museum Arrowtown',lat:-44.938,lng:168.830},
+    {id:'s608',time:'14:00',name:'巴塔哥尼亞巧克力店',enName:'Patagonia Chocolates',color:'#e07b54',stay:'00時15分',stayNote:'',transport:'🚶 步行',note:'箭鎮知名巧克力店，手工巧克力和冰淇淋都非常好吃，強烈推薦！',gmaps:'Patagonia Chocolates Arrowtown',lat:-44.938,lng:168.832},
+    {id:'s609',time:'14:21',name:'箭鎮華人歷史聚落',enName:'Historic Chinese Settlement',color:'#d4a017',stay:'00時20分',stayNote:'',transport:'🚶 步行',note:'19世紀淘金時代中國礦工聚落遺址，保存完整，了解華人移民歷史的好地方。',gmaps:'Historic Chinese Settlement Arrowtown',lat:-44.938,lng:168.827},
+    {id:'s610',time:'14:45',name:'箭河步道群',enName:'Arrow River Trail',color:'#7a9e5a',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'沿著箭河漫步，秋天楓葉和楊樹金黃，是南島最美的秋色步道之一！',gmaps:'Arrow River Trail Arrowtown',lat:-44.937,lng:168.816},
+    {id:'s611',time:'15:54',name:'海斯湖自然保護區',enName:'Lake Hayes Reserve',color:'#5b8dd9',stay:'01時00分',stayNote:'',transport:'🚗 自駕',note:'海斯湖保護區，湖面平靜如鏡，秋天紅葉倒影極美，攝影師必去秘境。',gmaps:'Lake Hayes Reserve Queenstown',lat:-45.008,lng:168.796},
+  ]},
+  {id:'d7',title:'格倫諾基・皇后鎮精華',date:'2026-04-10',weather:{icon:'🍂',desc:'秋色最美',temp:'13° / 3°',sunset:'19:00'},stops:[
+    {id:'s701',time:'09:00',name:'鹿公園高地・皇后鎮全景',enName:'Deer Park Heights Queenstown',color:'#7a9e5a',stay:'01時30分',stayNote:'',transport:'🚗 自駕',note:'高地野生動物公園，可俯瞰皇后鎮全景和瓦卡蒂普湖。有鹿、羊等動物可近距離接觸。',gmaps:'Deer Park Heights Queenstown',lat:-45.046,lng:168.665},
+    {id:'s702',time:'11:33',name:'格倫諾基動物體驗',enName:'Glenorchy Animal Experience',color:'#e07b54',stay:'01時00分',stayNote:'',transport:'🚗 自駕',note:'格倫諾基動物體驗農場，可以近距離接觸綿羊、鹿等紐西蘭特有農場動物。',gmaps:'Glenorchy New Zealand',lat:-44.852,lng:168.377},
+    {id:'s703',time:'12:37',name:'格倫諾基湖岸步道',enName:'Glenorchy Walkway',color:'#4a7c59',stay:'02時00分',stayNote:'',transport:'🚶 步行',note:'格倫諾基步道，湖邊紅葉配雪山，是《魔戒》取景地。秋天是最佳造訪時機。',gmaps:'Glenorchy Walkway',lat:-44.850,lng:168.380},
+    {id:'s704',time:'14:41',name:'格倫諾基紅色倉庫',enName:'Glenorchy Red Shed',color:'#d4a017',stay:'00時15分',stayNote:'',transport:'🚶 步行',note:'格倫諾基歷史蒸汽船站，紅色倉庫是地標建築。',gmaps:'Glenorchy Wharf New Zealand',lat:-44.849,lng:168.386},
+    {id:'s705',time:'14:56',name:'格倫諾基著名孤樹',enName:'That Glenorchy Tree',color:'#d4a017',stay:'00時15分',stayNote:'',transport:'🚶 步行',note:'格倫諾基著名的孤樹，背景是雪山和金色秋葉，極為壯美。',gmaps:'That Glenorchy Tree',lat:-44.851,lng:168.375},
+    {id:'s706',time:'15:12',name:'格倫諾基碼頭觀景台',enName:'Glenorchy Wharf & Viewpoint',color:'#5b8dd9',stay:'00時15分',stayNote:'',transport:'🚶 步行',note:'格倫諾基碼頭，遠眺瓦卡蒂普湖全景，水面如鏡。',gmaps:'Glenorchy Wharf Queenstown',lat:-44.848,lng:168.388},
+    {id:'s707',time:'16:13',name:'天際線皇后鎮纜車',enName:'Skyline Queenstown',color:'#5b8dd9',stay:'01時00分',stayNote:'',transport:'🚠 纜車',note:'搭乘纜車俯瞰皇后鎮全景，黃昏時分景色最美。建議提前購票避免排隊。',gmaps:'Skyline Queenstown',lat:-45.025,lng:168.652},
+    {id:'s708',time:'17:22',name:'天際線山頂溜滑車',enName:'Skyline Luge',color:'#e07b54',stay:'00時30分',stayNote:'',transport:'',note:'山頂刺激的溜滑車體驗，老少皆宜，超級好玩！可以反覆玩。',gmaps:'Skyline Queenstown Luge',lat:-45.025,lng:168.652},
+    {id:'s709',time:'17:58',name:'厄恩斯勞號蒸汽船遊湖',enName:'TSS Earnslaw Cruise',color:'#5b8dd9',stay:'02時00分',stayNote:'',transport:'🚢 渡輪',note:'百年歷史蒸汽船遊覽瓦卡蒂普湖，黃昏秋色配蒸汽船，浪漫極致。強烈推薦，需提前預訂。',gmaps:'TSS Earnslaw Queenstown',lat:-45.031,lng:168.659}
+  ]},
+  {id:'d8',title:'皇后鎮→米佛峽灣一日遊',date:'2026-04-11',weather:{icon:'🌧️',desc:'多雲有雨',temp:'12° / 5°',sunset:'18:55'},stops:[
+    {id:'s801',time:'08:15',name:'惡魔階梯觀景台',enName:"Devil's Staircase Lookout",color:'#4a7c59',stay:'00時10分',stayNote:'',transport:'🚗 自駕',note:'惡魔階梯觀景台，瓦卡蒂普湖沿途最美觀景點之一。',gmaps:"Devil's Staircase Queenstown",lat:-45.120,lng:168.525},
+    {id:'s802',time:'11:00',name:'埃格林頓山谷',enName:'Eglinton Valley',color:'#7a9e5a',stay:'00時20分',stayNote:'',transport:'🚗 自駕',note:'埃格林頓河谷，兩旁高山對稱，中間筆直公路，是南島最美公路景觀之一。',gmaps:'Eglinton Valley Fiordland',lat:-45.350,lng:168.020},
+    {id:'s803',time:'11:24',name:'咖啡貓補給站',enName:'Coffee Cat',color:'#e07b54',stay:'00時20分',stayNote:'',transport:'🚗 自駕',note:'前往米佛途中的補給咖啡站，外帶咖啡和點心繼續上路。',gmaps:'Coffee Cat Milford Road',lat:-45.400,lng:167.980},
+    {id:'s804',time:'12:25',name:'米佛山谷觀景台',enName:'Milford Valley Lookout',color:'#4a7c59',stay:'00時20分',stayNote:'',transport:'🚗 自駕',note:'米佛峽灣谷地觀景台，可遠眺峽灣入口壯麗景色。',gmaps:'Milford Valley Lookout',lat:-44.700,lng:167.930},
+    {id:'s805',time:'13:04',name:'米佛峽灣遊船',enName:'Milford Sound Cruise',color:'#5b8dd9',stay:'02時00分',stayNote:'',transport:'🚢 渡輪',note:'紐西蘭最著名的峽灣！乘船遊覽峽灣，感受千米高崖、瀑布飛流。4月份淡季遊客較少，體驗更佳。強烈推薦！',gmaps:'Milford Sound New Zealand',lat:-44.641,lng:167.897},
+    {id:'s806',time:'15:22',name:'1855觀景台',enName:'1855 Lookout',color:'#4a7c59',stay:'00時15分',stayNote:'',transport:'🚶 步行',note:'返程途中的觀景點。',gmaps:'1855 Lookout Milford Road',lat:-44.650,lng:167.920},
+    {id:'s807',time:'15:44',name:'格特魯德山谷觀景台',enName:'Gertrude Valley Lookout',color:'#4a7c59',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'格特魯德山谷，可看到翠綠的峽灣山谷全景。',gmaps:'Gertrude Valley Fiordland',lat:-44.680,lng:168.050},
+    {id:'s808',time:'16:03',name:'猴溪山泉水',enName:'Monkey Creek',color:'#7a9e5a',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'可以直接飲用的山泉水，是南島公路旅行的特殊體驗。',gmaps:'Monkey Creek Milford Road',lat:-44.750,lng:168.120},
+    {id:'s809',time:'16:24',name:'瀑布溪瀑布',enName:'Falls Creek Falls',color:'#5b8dd9',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'路邊瀑布，不需下車即可欣賞。',gmaps:'Falls Creek Milford Road',lat:-44.780,lng:168.150},
+    {id:'s810',time:'16:42',name:'霍利福德山谷觀景台',enName:'Hollyford Valley Lookout',color:'#4a7c59',stay:'00時10分',stayNote:'',transport:'🚗 自駕',note:'霍利福德山谷觀景台，壯闊山谷風光。',gmaps:'Hollyford Valley Fiordland',lat:-44.810,lng:168.200},
+    {id:'s811',time:'17:02',name:'根恩湖觀景台',enName:'Lake Gunn Viewpoint',color:'#5b8dd9',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'根恩湖觀景台，靜謐的山中湖泊，秋色倒影美麗。',gmaps:'Lake Gunn Fiordland',lat:-44.843,lng:168.274},
+  ]},
+  {id:'d9',title:'返程・但尼丁市區',date:'2026-04-12',weather:{icon:'🍂',desc:'秋天晴朗',temp:'14° / 6°',sunset:'18:50'},stops:[
+    {id:'s901',time:'09:00',name:'94號公路觀景台',enName:'94 Hwy 2905 Lookout',color:'#4a7c59',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'94號公路觀景台，南島內陸平原壯闊風景。',gmaps:'State Highway 94 Fiordland',lat:-45.560,lng:168.050},
+    {id:'s902',time:'10:28',name:'鹿公園',enName:'Deer Park',color:'#7a9e5a',stay:'00時30分',stayNote:'',transport:'🚗 自駕',note:'鹿公園，可近距離觀察紐西蘭鹿群。',gmaps:'Deer Park Southland New Zealand',lat:-45.800,lng:168.800},
+    {id:'s903',time:'11:01',name:'戈爾鎮麥當勞',enName:"McDonald's Gore",color:'#e07b54',stay:'00時40分',stayNote:'',transport:'🚗 自駕',note:'戈爾鎮麥當勞，途中休息補給站。',gmaps:"McDonald's Gore New Zealand",lat:-46.094,lng:168.942},
+    {id:'s904',time:'12:34',name:'巴爾克魯薩橋',color:'#888',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'壯觀的鐵橋歷史建築，停車觀賞拍照。',gmaps:'Balclutha Bridge New Zealand',lat:-46.231,lng:169.749},
+    {id:'s906',time:'14:33',name:'但尼丁美術館',enName:'Dunedin Public Art Gallery',color:'#d4a017',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'紐西蘭南島最重要的藝術館，常設展和特展均值得一看。',gmaps:'Dunedin Public Art Gallery',lat:-45.877,lng:170.502},
+    {id:'s907',time:'15:43',name:'聖若瑟主教座堂',enName:'St Joseph Cathedral',color:'#d4a017',stay:'00時30分',stayNote:'',transport:'🚶 步行',note:'宏偉的哥德式教堂，是但尼丁的宗教地標。',gmaps:'Saint Joseph Cathedral Dunedin',lat:-45.876,lng:170.503},
+    {id:'s908',time:'16:22',name:'但尼丁市政廳',enName:'Dunedin Town Hall',color:'#d4a017',stay:'00時30分',stayNote:'',transport:'🚶 步行',note:'維多利亞時代的精緻建築，是但尼丁最具代表性的地標。',gmaps:'Dunedin Town Hall',lat:-45.874,lng:170.502},
+    {id:'s909',time:'16:57',name:'但尼丁火車站',enName:'Dunedin Railway Station',color:'#d4a017',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'紐西蘭最壯觀的火車站！黑白棋盤花紋石材建造，是南半球最美火車站之一。必拍！',gmaps:'Dunedin Railway Station',lat:-45.876,lng:170.505}
+  ]},
+  {id:'d10',title:'摩拉基・普卡基湖・庫克山',date:'2026-04-13',weather:{icon:'⛅',desc:'多雲偶晴',temp:'13° / 4°',sunset:'18:45'},stops:[
+    {id:'s1001',time:'10:00',name:'摩拉基圓石海灘',enName:'Moeraki Boulders',color:'#888',stay:'00時25分',stayNote:'',transport:'🚗 自駕',note:'神秘的球形巨石群，散落在海灘上。退潮時可走近觀賞，注意潮汐時間。',gmaps:'Moeraki Boulders New Zealand',lat:-45.345,lng:170.831},
+    {id:'s1002',time:'10:57',name:'奧瑪魯藍企鵝棲息地',enName:'Oamaru Blue Penguin Colony',color:'#5b8dd9',stay:'01時00分',stayNote:'',transport:'🚗 自駕',note:'奧瑪魯藍企鵝棲息地，4月可以看到企鵝黃昏返巢，超可愛！最好選購夜間觀賞票。',gmaps:'Oamaru Blue Penguin Colony',lat:-45.099,lng:170.973},
+    {id:'s1003',time:'12:34',name:'象石',enName:'Elephant Rocks',color:'#888',stay:'00時30分',stayNote:'',transport:'🚗 自駕',note:'象石，形似大象的石灰岩群，也是《納尼亞》拍攝地。可以自由攀爬拍照。',gmaps:'Elephant Rocks New Zealand',lat:-44.811,lng:170.697},
+    {id:'s1004',time:'13:30',name:'懷塔基水壩',enName:'Waitaki Dam',color:'#5b8dd9',stay:'00時40分',stayNote:'',transport:'🚗 自駕',note:'懷塔基水壩，宏偉的水利建築，壩上可以俯瞰水庫全景。',gmaps:'Waitaki Dam New Zealand',lat:-44.918,lng:170.405},
+    {id:'s1005',time:'14:55',name:'高地鄉村鮭魚農場',enName:'Highland Salmon Farm',color:'#e07b54',stay:'01時00分',stayNote:'',transport:'🚗 自駕',note:'農場直營鮭魚餐廳，可以自己釣魚後現場料理。新鮮無比！強烈推薦。',gmaps:'Highland Salmon Twizel',lat:-44.273,lng:170.0},
+    {id:'s1006',time:'16:08',name:'紐西蘭高山薰衣草園',enName:'NZ Alpine Lavender',color:'#9b6bc7',stay:'00時30分',stayNote:'',transport:'🚗 自駕',note:'高山薰衣草農場，農場風景優美，可購買薰衣草製品。',gmaps:'NZ Alpine Lavender Twizel',lat:-44.289,lng:170.101},
+    {id:'s1007',time:'16:45',name:'普卡基湖灘頭觀景台',enName:'Lake Pukaki Beach Lookout',color:'#5b8dd9',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'普卡基湖灘頭觀景，秋天湖水依然碧藍，搭配金黃植被極美。',gmaps:'Lake Pukaki Beach New Zealand',lat:-44.145,lng:170.160},
+    {id:'s1008',time:'17:18',name:'庫克山與塔斯曼河觀景台',enName:'Mount Cook & Tasman River Lookout',color:'#4a7c59',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'塔斯曼河與庫克山觀景台，可看到冰川融水匯聚的碧藍河道。',gmaps:'Tasman River Lookout Mount Cook Road',lat:-43.880,lng:170.200},
+  ]},
+  {id:'d11',title:'庫克山・普卡基湖群',date:'2026-04-14',weather:{icon:'☀️',desc:'晴天',temp:'12° / 2°',sunset:'18:40'},stops:[
+    {id:'s1101',time:'13:00',name:'格倫坦納觀景台',enName:'Glentanner Lookout',color:'#4a7c59',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'格倫坦納觀景台，可遠望庫克山與塔斯曼冰川。',gmaps:'Glentanner Park Centre Mount Cook',lat:-43.812,lng:170.125},
+    {id:'s1102',time:'13:24',name:'奧拉基庫克山景觀台',enName:'Aoraki Mt Cook Scenic Lookout',color:'#4a7c59',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'奧拉基庫克山景觀台，正對南阿爾卑斯山最高峰。',gmaps:'Aoraki Mount Cook Lookout',lat:-43.735,lng:170.097},
+    {id:'s1103',time:'13:48',name:'普卡基湖最佳觀景台',enName:'Lake Pukaki Viewpoint (Mount Cook Road)',color:'#5b8dd9',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'普卡基湖最著名觀景點，碧藍湖水配庫克山雪峰，是紐西蘭最具代表性的風景。',gmaps:'Lake Pukaki Viewpoint Mount Cook Road',lat:-44.096,lng:170.154},
+    {id:'s1104',time:'14:15',name:'普卡基湖自然步道',enName:'Lake Pukaki Nature Walk',color:'#7a9e5a',stay:'00時30分',stayNote:'',transport:'🚶 步行',note:'普卡基湖自然步道，湖邊漫步欣賞秋色與湖光。',gmaps:'Lake Pukaki Nature Walk',lat:-44.153,lng:170.168},
+    {id:'s1105',time:'14:46',name:'普卡基湖岸線步道',enName:'Lake Pukaki Shoreline Walk',color:'#5b8dd9',stay:'00時20分',stayNote:'',transport:'🚶 步行',note:'普卡基湖岸線步道，不同角度欣賞湖景。',gmaps:'Lake Pukaki New Zealand',lat:-44.160,lng:170.165},
+    {id:'s1106',time:'15:07',name:'庫克山觀景點',enName:'Mount Cook View',color:'#4a7c59',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'另一個庫克山觀景角度。',gmaps:'Mount Cook View New Zealand',lat:-44.170,lng:170.170},
+    {id:'s1107',time:'15:25',name:'普卡基湖秘密觀景點',enName:'Lake Pukaki Viewing Spot',color:'#5b8dd9',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'普卡基湖秘密觀景點，人少景美。',gmaps:'Lake Pukaki New Zealand',lat:-44.180,lng:170.175},
+    {id:'s1108',time:'16:09',name:'蒂卡波湖',enName:'Lake Tekapo',color:'#5b8dd9',stay:'01時00分',stayNote:'',transport:'🚗 自駕',note:'蒂卡波湖，秋天湖色依然蔚藍，傍晚光線溫柔，是紐西蘭觀星聖地。',gmaps:'Lake Tekapo New Zealand',lat:-44.005,lng:170.478},
+  ]},
+  {id:'d12',title:'蒂卡波全日遊',date:'2026-04-15',weather:{icon:'☀️',desc:'晴天觀星最佳',temp:'11° / 1°',sunset:'18:35'},stops:[
+    {id:'s1201',time:'08:00',name:'好牧羊人教堂',color:'#d4a017',stay:'01時30分',stayNote:'',transport:'🚶 步行',note:'Church of the Good Shepherd，清晨光線最美，人少氣氛靜謐。石砌小教堂配蒂卡波湖，是南島最上鏡的場景。',gmaps:'Church of the Good Shepherd Lake Tekapo',lat:-44.007,lng:170.478},
+    {id:'s1202',time:'09:33',name:'蒂卡波湖觀景台',enName:'Lake Tekapo View Point',color:'#5b8dd9',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'蒂卡波湖主要觀景台，可拍攝全湖景色。',gmaps:'Lake Tekapo Viewpoint',lat:-44.005,lng:170.481},
+    {id:'s1203',time:'10:35',name:'脆皮魚薯條店',enName:'The Better Batter NZ',color:'#e07b54',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'蒂卡波人氣炸魚薯條店！新鮮魚排搭配酥脆薯條，是紐西蘭魚薯條的最高水準。必吃！',gmaps:'The Better Batter Lake Tekapo',lat:-44.007,lng:170.479},
+    {id:'s1204',time:'11:38',name:'約翰山步道',enName:'Mt John Walkway',color:'#7a9e5a',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'約翰山步道，半山腰可遠眺蒂卡波湖全景，秋色環繞。',gmaps:'Mt John Walkway Lake Tekapo',lat:-44.008,lng:170.463},
+    {id:'s1205',time:'13:02',name:'約翰山頂環形步道',enName:'Mt John Summit Circuit Track',color:'#4a7c59',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'約翰山頂環形步道，360度俯瞰麥肯齊盆地、蒂卡波湖、普卡基湖。紐西蘭最美的全景步道之一。',gmaps:'Mt John Summit Lake Tekapo',lat:-44.008,lng:170.463},
+    {id:'s1206',time:'14:22',name:'約翰山天文台展望所',enName:'Mt John University Observatory',color:'#9b6bc7',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'馬坦吉天文台，日間可參觀，晚上有星空觀賞活動。蒂卡波是國際暗空保護區，星空品質世界頂級。',gmaps:'Mt John University Observatory Lake Tekapo',lat:-44.008,lng:170.464},
+    {id:'s1207',time:'15:39',name:'松樹海灘',enName:'Pines Beach',color:'#7a9e5a',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'松樹海灘，湖邊鬆軟沙地，可以悠閒散步享受秋日寧靜。',gmaps:'Pines Beach Lake Tekapo',lat:-44.003,lng:170.474},
+    {id:'s1208',time:'16:46',name:'莫土阿里基觀景點',enName:'Motuariki View Point',color:'#5b8dd9',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'莫土阿里基觀景點，黃昏時分蒂卡波湖倒映金色天空，極為浪漫。',gmaps:'Motuariki Viewpoint Lake Tekapo',lat:-44.002,lng:170.487}
+  ]},
+  {id:'d13',title:'返回基督城',date:'2026-04-16',weather:{icon:'⛅',desc:'多雲',temp:'14° / 6°',sunset:'18:30'},stops:[
+    {id:'s1301',time:'09:35',name:'麥肯齊盆地觀景台',enName:'View Lookout',color:'#4a7c59',stay:'00時15分',stayNote:'',transport:'🚗 自駕',note:'返程途中觀景台，麥肯齊盆地秋季廣袤景色。',gmaps:'Burkes Pass New Zealand',lat:-44.045,lng:170.632},
+    {id:'s1302',time:'10:02',name:'柏克隘口小鎮',enName:'Burkes Pass',color:'#4a7c59',stay:'01時00分',stayNote:'',transport:'🚗 自駕',note:'柏克隘口，小鎮滿是秋天橙紅色樹木，是進出麥肯齊盆地的必經之路，秋色最美地點之一。',gmaps:'Burkes Pass Village New Zealand',lat:-44.043,lng:170.628},
+    {id:'s1303',time:'11:53',name:'傑拉爾丁古董車博物館',enName:'Geraldine Vintage Car Museum',color:'#d4a017',stay:'00時40分',stayNote:'',transport:'🚗 自駕',note:'傑拉爾丁古董車博物館，館藏豐富，老式農機和老車愛好者必訪。',gmaps:'Geraldine Vintage Car and Machinery Museum',lat:-44.094,lng:171.235},
+    {id:'s1304',time:'13:21',name:'阿什伯頓航空博物館',enName:'Ashburton Aviation Museum',color:'#d4a017',stay:'00時40分',stayNote:'',transport:'🚗 自駕',note:'阿什伯頓航空博物館，展示紐西蘭航空歷史，老飛機愛好者的天堂。',gmaps:'Ashburton Aviation Museum New Zealand',lat:-43.907,lng:171.763},
+    {id:'s1306',time:'16:15',name:'基督城叮叮電車',enName:'Christchurch Tram',color:'#e07b54',stay:'01時00分',stayNote:'',transport:'🚃 電車',note:'搭乘歷史電車遊覽基督城市區，可跳上跳下參觀各景點，是了解基督城最輕鬆的方式。',gmaps:'Christchurch Tram New Zealand',lat:-43.531,lng:172.637},
+    {id:'s1307',time:'17:24',name:'紙板大教堂',enName:'Cardboard Cathedral',color:'#d4a017',stay:'01時00分',stayNote:'',transport:'🚶 步行',note:'紙板大教堂！2011年地震後建造的臨時大教堂，以紙板和貨櫃為材料，建築設計令人驚嘆。',gmaps:'Cardboard Cathedral Christchurch',lat:-43.531,lng:172.641}
+  ]},
+  {id:'d14',title:'基督城市區巡遊',date:'2026-04-17',weather:{icon:'⛅',desc:'多雲',temp:'16° / 8°',sunset:'18:25'},stops:[
+    {id:'s1401',time:'09:15',name:'基督城大教堂廣場',color:'#d4a017',stay:'06時00分',stayNote:'',transport:'🚶 步行',note:'基督城市中心地標，探索重建中的市區，參觀植物園、坎特伯雷博物館、雅芳河撐篙等。推薦搭乘觀光電車串聯各景點。',gmaps:'Cathedral Square Christchurch',lat:-43.531,lng:172.636},
+  ]},
+  {id:'d15',title:'返台',date:'2026-04-18',weather:{icon:'✈️',desc:'旅程結束',temp:'',sunset:''},stops:[
+    {id:'s1501',time:'05:00',name:'基督城國際機場',enName:'Christchurch International Airport',color:'#5b8dd9',stay:'',stayNote:'',transport:'✈️ 飛機',note:'早起出發！建議提前2小時抵達機場。紐西蘭入境嚴格，行李中的食品務必申報或丟棄。一路順風，帶著滿滿的紅葉記憶回台灣！',gmaps:'Christchurch International Airport',lat:-43.4894,lng:172.5322}
+  ]}
+];
+
+let state={trip:{title:'紐西蘭南島 賞紅葉之旅',sub:'15 天・南島全覽'},days:[]};
+
+async function loadState(){
+  try{const r=await window.storage.get(SK);if(r){Object.assign(state,JSON.parse(r.value));return;}}catch(e){}
+  state.days=JSON.parse(JSON.stringify(DAYS));
+}
+async function saveState(){try{await window.storage.set(SK,JSON.stringify(state));}catch(e){}}
+
+function uid(){return 'x'+Date.now()+Math.random().toString(36).slice(2,5);}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function closeM(id){document.getElementById(id).classList.add('hidden');}
+function setWI(e){document.getElementById('dwi').value=e;}
+function selC(el){document.querySelectorAll('.dot-opt').forEach(d=>d.classList.remove('selected'));el.classList.add('selected');selColor=el.dataset.c;}
+
+function chkPw(){
+  if(document.getElementById('pwi').value===PW){
+    isAdm=true;document.getElementById('lp').classList.add('hidden');updAdm();toast('✅ 管理者模式');render();
+  }else{document.getElementById('pwe').style.display='block';document.getElementById('pwi').value='';}
+}
+function enterV(){document.getElementById('lp').classList.add('hidden');render();}
+function toggleAdm(){
+  if(!isAdm){document.getElementById('lp').classList.remove('hidden');document.getElementById('pwi').value='';document.getElementById('pwe').style.display='none';}
+  else{isAdm=false;updAdm();render();toast('已切換回瀏覽模式');}
+}
+function updAdm(){
+  const lb=document.getElementById('lb'),ll=document.getElementById('ll'),ub=document.getElementById('ub');
+  if(isAdm){lb.classList.add('adm');ll.textContent='✏️ 編輯模式';ub.textContent='🔓 鎖定';ub.classList.add('locked');document.getElementById('asr').classList.remove('hidden');}
+  else{lb.classList.remove('adm');ll.textContent='🔒 瀏覽模式';ub.textContent='🔒 解鎖編輯';ub.classList.remove('locked');document.getElementById('asr').classList.add('hidden');}
+}
+
+function swTab(tab){
+  activeTab=tab;
+  document.getElementById('pg-itin').classList.toggle('hidden',tab!=='itin');
+  document.getElementById('pg-map').style.display=tab==='map'?'flex':'none';
+  document.querySelectorAll('.bottom-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='map')renderMap();
+}
+
+function render(){
+  if(dayIdx>=state.days.length)dayIdx=Math.max(0,state.days.length-1);
+  renderTabs();
+  if(state.days.length)renderDay(state.days[dayIdx]);
+  else document.getElementById('tl').innerHTML='<div class="empty-msg"><div class="ei">🗺️</div><div class="et">尚無行程資料</div></div>';
+}
+function swDay(i){dayIdx=i;render();document.querySelectorAll('.day-tab')[i]?.scrollIntoView({inline:'center',behavior:'smooth'});}
+
+function renderTabs(){
+  const w=document.getElementById('dtabs');
+  let h=state.days.map((d,i)=>{
+    const dt=d.date?new Date(d.date+'T00:00').toLocaleDateString('zh-TW',{month:'numeric',day:'numeric'}):'設定日期';
+    return`<div class="day-tab ${i===dayIdx?'active':''}" onclick="swDay(${i})"><span class="dn">Day ${i+1}</span><span class="dd">${dt}</span></div>`;
+  }).join('');
+  if(isAdm)h+=`<button class="add-day-tab" onclick="openAddDay()">＋ 天</button>`;
+  w.innerHTML=h;
+}
+
+const WMO={0:'晴天',1:'大致晴朗',2:'部分多雲',3:'陰天',45:'霧',48:'霧',51:'毛毛雨',53:'毛毛雨',55:'毛毛雨',61:'小雨',63:'中雨',65:'大雨',71:'小雪',73:'中雪',75:'大雪',80:'陣雨',81:'陣雨',82:'大陣雨',95:'雷雨',96:'雷雨夾冰雹',99:'雷雨夾冰雹'};
+const WICO={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
+let wxCache={};
+
+async function fetchWeather(lat,lng,date){
+  const key=`${lat},${lng},${date}`;
+  if(wxCache[key])return wxCache[key];
+  try{
+    const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=weathercode,temperature_2m_max,temperature_2m_min,sunset&timezone=Pacific/Auckland&start_date=${date}&end_date=${date}`;
+    const r=await fetch(url);
+    const j=await r.json();
+    if(j.daily&&j.daily.weathercode){
+      const code=j.daily.weathercode[0];
+      const tmax=Math.round(j.daily.temperature_2m_max[0]);
+      const tmin=Math.round(j.daily.temperature_2m_min[0]);
+      const sunset=j.daily.sunset[0]?.slice(11,16)||'';
+      const result={icon:WICO[code]||'🍂',desc:WMO[code]||'',temp:`${tmax}° / ${tmin}°`,sunset};
+      wxCache[key]=result;
+      return result;
+    }
+  }catch(e){}
+  return null;
+}
+
+async function renderDay(day){
+  const w=day.weather||{};
+  document.getElementById('wi').textContent=w.icon||'🍂';
+  document.getElementById('wt').textContent=`Day ${dayIdx+1}　${day.title}`;
+  const dtStr=day.date?new Date(day.date+'T00:00').toLocaleDateString('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'short'}):'（尚未設定日期）';
+  document.getElementById('wd').textContent=dtStr;
+  document.getElementById('wtp').textContent=w.temp||'';
+  const tags=[];
+  if(w.sunset)tags.push(`🌇 ${w.sunset}`);
+  if(w.desc)tags.push(w.desc);
+  document.getElementById('wtg').innerHTML=tags.map(t=>`<span class="wtag">${t}</span>`).join('')+'<span class="wtag" id="wx-loading" style="display:none">⏳ 抓取天氣中…</span>';
+
+  // Auto-fetch weather if date and coords available
+  if(day.date){
+    const firstPt=(day.stops||[]).find(s=>s.lat&&s.lng);
+    if(firstPt){
+      document.getElementById('wx-loading').style.display='inline-flex';
+      const wx=await fetchWeather(firstPt.lat,firstPt.lng,day.date);
+      document.getElementById('wx-loading').style.display='none';
+      if(wx){
+        document.getElementById('wi').textContent=wx.icon;
+        document.getElementById('wtp').textContent=wx.temp;
+        const autoTags=[];
+        if(wx.sunset)autoTags.push(`🌇 ${wx.sunset}`);
+        if(wx.desc)autoTags.push(wx.desc);
+        autoTags.push('🌐 即時天氣');
+        document.getElementById('wtg').innerHTML=autoTags.map(t=>`<span class="wtag">${t}</span>`).join('');
+      }
+    }
+  }
+  const tl=document.getElementById('tl');
+  if(!day.stops||!day.stops.length){tl.innerHTML='<div class="empty-msg"><div class="ei">📋</div><div class="et">這天還沒有行程</div></div>';return;}
+  tl.innerHTML=day.stops.map((s,i)=>`
+    <div class="tl-item">
+      <div class="tl-bullet" style="color:${s.color||'#4a7c59'}"></div>
+      <div class="tl-card" id="c${i}">
+        <div class="tl-card-header" onclick="togCard(${i})">
+          <span class="tl-time">${s.time||''}</span>
+          <span class="tl-dot-i" style="background:${s.color||'#4a7c59'}"></span>
+          <div style="flex:1;min-width:0">
+            <div class="tl-name">${s.name}</div>
+            ${s.enName?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${s.enName}</div>`:''}
+          </div>
+          ${s.stay&&!s.stayNote?`<span class="tl-dur">${s.stay}</span>`:''}
+          <span class="tl-arr">▼</span>
+        </div>
+        <div class="tl-body">
+          ${s.note?`<div class="tl-note">${s.note}</div>`:''}
+          ${s.stayNote?`<span class="sc">🏨 ${s.stayNote}</span>`:''}
+          ${s.transport?`<span class="tc">${s.transport}</span>`:''}
+          ${s.gmaps?`<div class="gmaps-link"><div class="gmaps-left"><span style="font-size:15px">📍</span>${s.name}</div><button class="gmaps-btn" onclick="openGM('${encodeURIComponent(s.gmaps)}')">🗺 開啟</button></div>`:''}
+          ${isAdm?`<div class="adm-acts"><button class="btn-g" onclick="openEditStop(${i})">✏️ 編輯</button></div>`:''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function togCard(i){document.getElementById('c'+i).classList.toggle('expanded');}
+function openGM(q){window.open('https://www.google.com/maps/search/?api=1&query='+q,'_blank');}
+function swDay(i){dayIdx=i;render();document.querySelectorAll('.day-tab')[i]?.scrollIntoView({inline:'center',behavior:'smooth'});}
+
+function renderMap(){
+  if(!mapObj){mapObj=L.map('map',{zoomControl:true,attributionControl:false});L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(mapObj);}
+  mapMk.forEach(m=>mapObj.removeLayer(m));mapMk=[];
+  if(mapRt){mapObj.removeLayer(mapRt);mapRt=null;}
+  const day=state.days[dayIdx];
+  document.getElementById('mdl').textContent=`Day ${dayIdx+1}　${day?.title||''}`;
+  if(!day){mapObj.setView([-44.5,170],6);return;}
+  const pts=(day.stops||[]).filter(s=>s.lat&&s.lng);
+  if(!pts.length){mapObj.setView([-44.5,170],6);document.getElementById('mpl').textContent='暫無座標';return;}
+  mapRt=L.polyline(pts.map(s=>[s.lat,s.lng]),{color:'#4a7c59',weight:3,dashArray:'7 5',opacity:.8}).addTo(mapObj);
+  pts.forEach((s,i)=>{
+    const icon=L.divIcon({className:'',html:`<div style="background:${s.color||'#4a7c59'};color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:sans-serif">${i+1}</div>`,iconSize:[28,28],iconAnchor:[14,14]});
+    const m=L.marker([s.lat,s.lng],{icon}).addTo(mapObj);
+    m.bindPopup(`<strong>${s.name}</strong><br><small style="color:#666">${s.time||''}</small>`);
+    mapMk.push(m);
+  });
+  try{mapObj.fitBounds(mapRt.getBounds(),{padding:[40,40]});}catch(e){}
+  document.getElementById('mpl').textContent=`${pts.length} 個地點`;
+  setTimeout(()=>mapObj.invalidateSize(),100);
+}
+
+let eDayMode=false;
+function openAddDay(){
+  eDayMode=false;editDI=null;
+  document.getElementById('mdt').textContent='新增天數';
+  document.getElementById('dt').value='';document.getElementById('dd').value='';
+  document.getElementById('dwi').value='🍂';document.getElementById('dwt').value='';
+  document.getElementById('dwd').value='';document.getElementById('dws').value='';
+  document.getElementById('ddb').style.display='none';
+  document.getElementById('md').classList.remove('hidden');
+}
+function openEditDay(){
+  if(!isAdm)return;
+  eDayMode=true;editDI=dayIdx;
+  const d=state.days[dayIdx];
+  document.getElementById('mdt').textContent='編輯這天';
+  document.getElementById('dt').value=d.title||'';document.getElementById('dd').value=d.date||'';
+  document.getElementById('dwi').value=d.weather?.icon||'🍂';document.getElementById('dwt').value=d.weather?.temp||'';
+  document.getElementById('dwd').value=d.weather?.desc||'';document.getElementById('dws').value=d.weather?.sunset||'';
+  document.getElementById('ddb').style.display='inline-flex';
+  document.getElementById('md').classList.remove('hidden');
+}
+function saveDay(){
+  const title=document.getElementById('dt').value.trim()||`Day ${state.days.length+1}`;
+  const obj={id:eDayMode?state.days[editDI].id:uid(),title,date:document.getElementById('dd').value,
+    weather:{icon:document.getElementById('dwi').value||'🍂',temp:document.getElementById('dwt').value,desc:document.getElementById('dwd').value,sunset:document.getElementById('dws').value},
+    stops:eDayMode?(state.days[editDI].stops||[]):[]};
+  if(eDayMode)state.days[editDI]=obj;
+  else{state.days.push(obj);dayIdx=state.days.length-1;}
+  saveState();closeM('md');render();toast(eDayMode?'✅ 已更新':'✅ 已新增 '+title);
+}
+function delDay(){
+  if(!confirm(`確定刪除 Day ${dayIdx+1}？`))return;
+  state.days.splice(dayIdx,1);
+  if(dayIdx>=state.days.length)dayIdx=Math.max(0,state.days.length-1);
+  saveState();closeM('md');render();toast('已刪除');
+}
+
+function openAddStop(){
+  editSI=null;
+  document.getElementById('mst').textContent='新增地點';
+  ['st','ss','sn','sno','ssn','slat','slng','sgm'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('st').value='09:00';
+  document.getElementById('str').value='';
+  document.querySelectorAll('.dot-opt').forEach(d=>d.classList.remove('selected'));
+  document.querySelector('.dot-opt').classList.add('selected');selColor='#4a7c59';
+  document.getElementById('dsb').style.display='none';
+  document.getElementById('ms').classList.remove('hidden');
+}
+function openEditStop(idx){
+  if(!isAdm)return;
+  editSI=idx;const s=state.days[dayIdx].stops[idx];
+  document.getElementById('mst').textContent='編輯地點';
+  document.getElementById('st').value=s.time||'09:00';
+  document.getElementById('ss').value=s.stay||'';
+  document.getElementById('sn').value=s.name||'';
+  document.getElementById('sno').value=s.note||'';
+  document.getElementById('ssn').value=s.stayNote||'';
+  document.getElementById('str').value=s.transport||'';
+  document.getElementById('slat').value=s.lat||'';
+  document.getElementById('slng').value=s.lng||'';
+  document.getElementById('sgm').value=s.gmaps||'';
+  selColor=s.color||'#4a7c59';
+  document.querySelectorAll('.dot-opt').forEach(d=>d.classList.toggle('selected',d.dataset.c===selColor));
+  document.getElementById('dsb').style.display='inline-flex';
+  document.getElementById('ms').classList.remove('hidden');
+}
+function saveStop(){
+  const name=document.getElementById('sn').value.trim();
+  if(!name){toast('請填寫地點名稱');return;}
+  const stop={
+    id:editSI!==null?state.days[dayIdx].stops[editSI].id:uid(),
+    time:document.getElementById('st').value,stay:document.getElementById('ss').value,
+    name,color:selColor,note:document.getElementById('sno').value,
+    stayNote:document.getElementById('ssn').value,transport:document.getElementById('str').value,
+    lat:parseFloat(document.getElementById('slat').value)||null,
+    lng:parseFloat(document.getElementById('slng').value)||null,
+    gmaps:document.getElementById('sgm').value
+  };
+  const stops=state.days[dayIdx].stops;
+  if(editSI!==null)stops[editSI]=stop;else stops.push(stop);
+  stops.sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  saveState();closeM('ms');render();toast(editSI!==null?'✅ 已更新':'✅ 已新增');
+}
+function delStop(){
+  if(!confirm('確定刪除？'))return;
+  state.days[dayIdx].stops.splice(editSI,1);
+  saveState();closeM('ms');render();toast('已刪除');
+}
+
+(async()=>{await loadState();render();})();
+</script>
+</body>
+</html>
